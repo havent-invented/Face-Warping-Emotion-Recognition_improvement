@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 from typing import List, Dict
 
-from torchvision.models.video import r3d_18, r2plus1d_18
+from torchvision.models.video import r3d_18, r2plus1d_18, swin3d_s, swin3d_t, mvit_v2_s
 
 def set_requires_grad(model, requires_grad=True):
 	for param in model.parameters():
@@ -70,33 +70,54 @@ class Emotion_Recognizer_Fine_Tune(nn.Module):
 class Encoder(nn.Module):
 	def __init__(self, opt):
 		super(Encoder, self).__init__()
-
+		self.stock_type = (opt.backbone == 'r3d' or opt.backbone == 'r21d' or opt.backbone == 'resnet18')
+		fc_in_sz = 512
 		if opt.backbone == 'r3d':
 			r3d = r3d_18(pretrained=True)
 			r3d_layers = list(r3d.children())[:-1]
 			self.model = nn.Sequential(*r3d_layers)
+			
 		elif opt.backbone == 'r21d':
 			r21d = r2plus1d_18(pretrained=True)
 			r21d_layers = list(r21d.children())[:-1]
 			self.model = nn.Sequential(*r21d_layers)
+
 		elif opt.backbone == 'resnet18':
 			resnet18 = torchvision.models.resnet18(pretrained=True)
 			resnet18_layers = list(resnet18.children())[:-1]
 			self.model = nn.Sequential(*resnet18_layers)
 
+		elif opt.backbone == "swin3d_s":
+			self.model = swin3d_s(pretrained=True)
+			self.model.head = nn.Linear(768, 128, bias=True)
+			
+		elif opt.backbone == "swin3d_t":
+			swin3d_t_model = swin3d_t(pretrained=True)
+			#swin3d_t_layers = list(swin3d_t_model.children())[:-2]
+			self.model = swin3d_t_model#nn.Sequential(*swin3d_t_layers)
+			self.model.head = nn.Linear(768, 128, bias=True)
+
+		elif opt.backbone == "mvit_v2_s":
+			self.model == mvit_v2_s(pretrained=True)
+			self.model.head = nn.Linear(768, 128, bias=True)
+
 		self.dropout_rate = opt.dropout_rate
 		self.dropout = nn.Dropout(self.dropout_rate)
 		self.flatten = Flatten()
-		self.fc1 = nn.Linear(512, 256)
+		self.fc1 = nn.Linear(fc_in_sz, 256)
 		self.fc2 = nn.Linear(256, 128)
 		self.relu = nn.ReLU()
 
 	def forward(self, x):
+		print(x.shape)
 		x = self.model(x)
-		x = self.flatten(x)
-		x = self.fc1(x)
-		x = self.relu(x)
-		x = self.fc2(x)
+		if self.stock_type:
+			print(f"stock: {x.shape}")
+			x = self.flatten(x)
+			x = self.fc1(x)
+			x = self.relu(x)
+			x = self.fc2(x)
+		print(x.shape)
 		x = F.normalize(x, p=2, dim=1)
 		x = self.dropout(x)
 

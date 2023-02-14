@@ -45,7 +45,7 @@ def main():
 	parser.add_argument('--weight_decay', type=float, default=1e-4, help='initial learning rate')
 
 	# Model parameters
-	parser.add_argument('--backbone', type=str, default='r21d', choices=['r3d', 'r21d', 'resnet18'])
+	parser.add_argument('--backbone', type=str, default='r21d', choices=['r3d', 'r21d', 'resnet18', 'swin3d_t', 'swin3d_s'])
 	parser.add_argument('--dropout_rate', type=float, default=0.1, help='0.1')
 
 	# GPU
@@ -154,7 +154,8 @@ class Solver():
 			else:
 				labels = a_labels
 
-			predictions = self.model(images).view_as(labels)
+			predictions = self.model(images)
+			predictions = predictions.view_as(labels)
 
 			loss = self.criterion(labels, predictions)
 
