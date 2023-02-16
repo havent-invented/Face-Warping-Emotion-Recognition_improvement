@@ -51,6 +51,8 @@ def main():
 	# GPU
 	parser.add_argument('--gpu_num', default='cuda:0', help='GPU device')
 
+	parser.add_argument('--use_OF', type=bool, default=False, help='Flag to use optical flow or not')
+
 	opt = parser.parse_args()
 
 	if opt.verbose:
