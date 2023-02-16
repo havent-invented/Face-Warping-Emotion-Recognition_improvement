@@ -1,0 +1,3 @@
+[submodule "FastFlowNet"]
+	path = FastFlowNet
+	url = https://github.com/ltkong218/FastFlowNet
