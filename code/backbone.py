@@ -146,6 +146,7 @@ class Encoder(nn.Module):
 			with torch.no_grad():
 				self.OF_model.eval()
 				OF = self.OF_model(X2).detach()
+				print(100022)
 			OF = torch.nn.functional.interpolate(OF, size=x.shape[-2:], mode='bilinear', align_corners=False)
 
 			OF_converted =  torch.zeros([x.shape[0], 2,fr_len, x.shape[-2], x.shape[-1]], device = x.device)

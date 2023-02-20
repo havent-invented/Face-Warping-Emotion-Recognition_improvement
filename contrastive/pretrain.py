@@ -23,7 +23,7 @@ from datasets import get_dataloader
 from tools.utils import set_seed
 
 warnings.filterwarnings('always')
-os.environ['CUDA_VISIBLE_DEVICES']='1,2,3,4'
+#os.environ['CUDA_VISIBLE_DEVICES']='1,2,3,4'
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -91,7 +91,8 @@ class Solver():
 		# Model, optimizer and loss function
 		self.model = backbone.Encoder(self.opt)
 		#self.model = backbone.Encoder(self.opt).to(self.device)
-		self.model = torch.nn.DataParallel(self.model, device_ids=[0,1,2,3]).cuda()
+		###self.model = torch.nn.DataParallel(self.model, device_ids=[0,1,2,3]).cuda()
+		self.model = self.model.cuda()
 		for param in self.model.parameters():
 			param.requires_grad = True
 
